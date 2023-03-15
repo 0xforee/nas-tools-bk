@@ -100,7 +100,6 @@ class BuiltinIndexer(_IIndexClient):
         # 公开站点
         if public:
             for site, attr in self.sites.get_public_sites():
-                print('site: %s' % site)
                 indexer = IndexerHelper().get_indexer(url=site,
                                                       public=True,
                                                       proxy=attr.get("proxy"),
