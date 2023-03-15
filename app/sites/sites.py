@@ -6,6 +6,7 @@ from app.message import Message
 from app.utils import RequestUtils, StringUtils
 from app.utils.commons import singleton
 from config import Config
+from app.conf import SiteConf
 
 
 @singleton
@@ -135,6 +136,27 @@ class Sites:
         if siteid or siteurl:
             return {}
         return ret_sites
+
+    @staticmethod
+    def is_public_site(url):
+        """
+        判断是否为公开BT站点
+        """
+        _, netloc = StringUtils.get_url_netloc(url)
+        if netloc in SiteConf.PUBLIC_TORRENT_SITES.keys():
+            return True
+        return False
+
+    @staticmethod
+    def get_public_sites(url=None):
+        """
+        查询所有公开BT站点
+        """
+        if url:
+            _, netloc = StringUtils.get_url_netloc(url)
+            return SiteConf.PUBLIC_TORRENT_SITES.get(netloc) or {}
+        else:
+            return SiteConf.PUBLIC_TORRENT_SITES.items()
 
     def get_site_dict(self,
                       rss=False,
