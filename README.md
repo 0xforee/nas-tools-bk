@@ -1,5 +1,7 @@
 ![logo-blue](https://user-images.githubusercontent.com/51039935/197520391-f35db354-6071-4c12-86ea-fc450f04bc85.png)
 # NAS媒体库管理工具
+仅自用，不对功能完整性和稳定性做保证，请各位友好交流！！！  
+
 
 [![GitHub stars](https://img.shields.io/github/stars/0xforee/nas-tools?style=plastic)](https://github.com/0xforee/nas-tools/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/0xforee/nas-tools?style=plastic)](https://github.com/0xforee/nas-tools/network/members)
@@ -13,10 +15,15 @@ Docker：https://hub.docker.com/repository/docker/0xforee/nas-tools
 
 API: http://localhost:3000/api/v1/
 
+## 免责声明
+1) 本软件不提供任何内容，仅作为辅助工具简化用户手工操作，对用户的行为及内容毫不知情，使用本软件产生的任何责任需由使用者本人承担。
+2) 本软件代码开源，基于开源代码进行修改，人为去除相关限制导致软件被分发、传播并造成责任事件的，需由代码修改发布者承担全部责任。同时按AGPL-3.0开源协议要求，基于此软件代码的所有修改必须开源。
+3) 本软件仅供学习交流，请保持低调，勿公开传播
 
 ## 功能：
 
-NAS媒体库管理工具。
+NAS媒体库管理工具。  
+感谢原作者提供的工具，这里旨在保持主线迭代的情况下尝试兼容历史 BT 功能。
 
 
 ## 安装
@@ -36,7 +43,3 @@ python3 -m pip install -r requirements.txt
 export NASTOOL_CONFIG="/xxx/config/config.yaml"
 nohup python3 run.py & 
 ```
-
-## 免责声明
-1) 本软件不提供任何内容，仅作为辅助工具简化用户手工操作，对用户的行为及内容毫不知情，使用本软件产生的任何责任需由使用者本人承担。
-2) 本软件代码开源，基于开源代码进行修改，人为去除相关限制导致软件被分发、传播并造成责任事件的，需由代码修改发布者承担全部责任。同时按AGPL-3.0开源协议要求，基于此软件代码的所有修改必须开源。
