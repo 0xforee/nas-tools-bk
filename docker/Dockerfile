@@ -1,4 +1,5 @@
 FROM alpine
+RUN set -eux && sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
 RUN apk update  \
     && apk add --no-cache libffi-dev \
     && apk add --no-cache $(echo $(wget --no-check-certificate -qO- https://raw.githubusercontent.com/0xforee/nas-tools/master/package_list.txt)) \
@@ -7,11 +8,11 @@ RUN apk update  \
     && ln -sf /usr/bin/python3 /usr/bin/python \
     && curl https://rclone.org/install.sh | bash \
     && if [ "$(uname -m)" = "x86_64" ]; then ARCH=amd64; elif [ "$(uname -m)" = "aarch64" ]; then ARCH=arm64; fi \
-    && curl https://dl.min.io/client/mc/release/linux-${ARCH}/mc --create-dirs -o /usr/bin/mc \
+    && curl https://dl.minio.org.cn/client/mc/release/linux-${ARCH}/mc --create-dirs -o /usr/bin/mc \
     && chmod +x /usr/bin/mc \
-    && pip install --upgrade pip setuptools wheel \
-    && pip install cython \
-    && pip install -r https://raw.githubusercontent.com/0xforee/nas-tools/master/requirements.txt \
+    && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade pip setuptools wheel \
+    && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple cython \
+    && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r https://raw.githubusercontent.com/0xforee/nas-tools/master/requirements.txt \
     && apk del libffi-dev \
     && npm install pm2 -g \
     && rm -rf /tmp/* /root/.cache /var/cache/apk/*
