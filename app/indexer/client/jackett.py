@@ -15,9 +15,7 @@ class Jackett(_IIndexClient):
     client_type = IndexerType.JACKETT
     # 索引器名称
     client_name = IndexerType.JACKETT.value
-    schema = "jackett"
     _client_config = {}
-    index_type = IndexerType.JACKETT.value
     _password = None
 
     def __init__(self, config=None):
@@ -50,7 +48,17 @@ class Jackett(_IIndexClient):
 
     @classmethod
     def match(cls, ctype):
-        return True if ctype in [cls.schema, cls.index_type] else False
+        return True if ctype in [cls.client_id, cls.client_type, cls.client_name] else False
+
+    def get_type(self):
+        return self.client_type
+
+    def get_status(self):
+        """
+        检查连通性
+        :return: True、False
+        """
+        return True
 
     def get_indexers(self):
         """
@@ -61,7 +69,7 @@ class Jackett(_IIndexClient):
         cookie = None
         session = requests.session()
         res = RequestUtils(session=session).post_res(url=f"{self.host}UI/Dashboard",
-                                                     params={"password": self._password})
+                                                     data={"password": self._password})
         if res and session.cookies:
             cookie = session.cookies.get_dict()
         indexer_query_url = f"{self.host}api/v2.0/indexers?configured=true"
