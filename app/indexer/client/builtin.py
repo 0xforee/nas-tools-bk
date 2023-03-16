@@ -5,6 +5,7 @@ import time
 import log
 from app.helper import IndexerHelper, IndexerConf, ProgressHelper, ChromeHelper, DbHelper
 from app.indexer.client._base import _IIndexClient
+from app.indexer.client._rarbg import Rarbg
 from app.indexer.client._render_spider import RenderSpider
 from app.indexer.client._spider import TorrentSpider
 from app.indexer.client._tnode import TNodeSpider
@@ -157,7 +158,10 @@ class BuiltinIndexer(_IIndexClient):
         # 开始索引
         result_array = []
         try:
-            if indexer.parser == "TNodeSpider":
+            if indexer.parser == "Rarbg":
+                imdb_id = match_media.imdb_id if match_media else None
+                error_flag, result_array = Rarbg().search(keyword=search_word, indexer=indexer, imdb_id=imdb_id)
+            elif indexer.parser == "TNodeSpider":
                 error_flag, result_array = TNodeSpider(indexer=indexer).search(keyword=search_word)
             elif indexer.parser == "RenderSpider":
                 error_flag, result_array = RenderSpider().search(keyword=search_word,

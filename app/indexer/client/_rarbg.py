@@ -28,11 +28,11 @@ class Rarbg:
 
     def search(self, keyword, indexer, imdb_id=None):
         if not keyword:
-            return []
+            return True, []
         self.__get_token()
         if not self._token:
             log.warn(f"【INDEXER】{indexer.name} 未获取到token，无法搜索")
-            return []
+            return True, []
         params = {'app_id': self._appid, 'mode': 'search', 'token': self._token, 'format': 'json_extended', 'limit': 100}
         if imdb_id:
             params['search_imdb'] = imdb_id
@@ -59,8 +59,8 @@ class Rarbg:
                 torrents.append(torrent)
         elif res is not None:
             log.warn(f"【INDEXER】{indexer.name} 搜索失败，错误码：{res.status_code}")
-            return []
+            return True, []
         else:
             log.warn(f"【INDEXER】{indexer.name} 搜索失败，无法连接 torrentapi.org")
-            return []
-        return torrents
+            return True, []
+        return False, torrents
