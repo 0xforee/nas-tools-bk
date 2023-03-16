@@ -8,9 +8,9 @@ from config import Config
 
 @singleton
 class IndexerHelper:
-    _indexers = []
 
     def __init__(self):
+        self._indexers = []
         self.init_config()
 
     def init_config(self):
@@ -18,7 +18,16 @@ class IndexerHelper:
             with open(os.path.join(Config().get_inner_config_path(),
                                    "sites.dat"),
                       "rb") as f:
-                self._indexers = pickle.load(f)
+                self._indexers.extend(pickle.load(f).get("indexer"))
+        except Exception as err:
+            ExceptionUtils.exception_traceback(err)
+
+        # pub site
+        try:
+            with open(os.path.join(Config().get_inner_config_path(),
+                                   "pubsites.dat"),
+                      "rb") as f:
+                self._indexers.extend(pickle.load(f))
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
 
