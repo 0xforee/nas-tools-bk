@@ -14,9 +14,7 @@ class Prowlarr(_IIndexClient):
     client_type = IndexerType.PROWLARR
     # 索引器名称
     client_name = IndexerType.PROWLARR.value
-    schema = "prowlarr"
     _client_config = {}
-    index_type = IndexerType.PROWLARR.value
 
     def __init__(self, config=None):
         super().__init__()
@@ -38,7 +36,7 @@ class Prowlarr(_IIndexClient):
 
     @classmethod
     def match(cls, ctype):
-        return True if ctype in [cls.schema, cls.index_type] else False
+        return True if ctype in [cls.client_id, cls.client_type, cls.client_name] else False
 
     def get_status(self):
         """
