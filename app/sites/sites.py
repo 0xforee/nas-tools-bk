@@ -3,10 +3,12 @@ from datetime import datetime
 
 from app.helper import ChromeHelper, SiteHelper, DbHelper
 from app.message import Message
-from app.utils import RequestUtils, StringUtils
+from app.utils import RequestUtils, StringUtils, ExceptionUtils
 from app.utils.commons import singleton
 from config import Config
 from app.conf import SiteConf
+from lxml import etree
+
 
 
 @singleton
@@ -213,6 +215,47 @@ class Sites:
                 if site.get("name") == site_name:
                     return site.get("download_setting")
         return None
+
+    def parse_site_download_url(self, page_url, xpath):
+        """
+        从站点详情页面中解析中下载链接
+        :param page_url: 详情页面地址
+        :param xpath: 解析XPATH，同时还包括Cookie、UA和Referer
+        """
+        if not page_url or not xpath:
+            return ""
+        cookie, ua, referer, page_source = None, None, None, None
+        xpaths = xpath.split("|")
+        xpath = xpaths[0]
+        if len(xpaths) > 1:
+            cookie = xpaths[1]
+        if len(xpaths) > 2:
+            ua = xpaths[2]
+        if len(xpaths) > 3:
+            referer = xpaths[3]
+        try:
+            site_info = self.get_public_sites(url=page_url)
+            if not site_info.get("referer"):
+                referer = None
+            req = RequestUtils(
+                headers=ua,
+                cookies=cookie,
+                referer=referer,
+                proxies=Config().get_proxies() if site_info.get("proxy") else None
+            ).get_res(url=page_url)
+            if req and req.status_code == 200:
+                if req.text:
+                    page_source = req.text
+            # xpath解析
+            if page_source:
+                html = etree.HTML(page_source)
+                urls = html.xpath(xpath)
+                if urls:
+                    return str(urls[0])
+        except Exception as err:
+            ExceptionUtils.exception_traceback(err)
+        return None
+
 
     def test_connection(self, site_id):
         """

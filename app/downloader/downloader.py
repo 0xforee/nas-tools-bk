@@ -298,7 +298,7 @@ class Downloader:
         # 详情页面
         page_url = media_info.page_url
         # 默认值
-        site_info, dl_files_folder, dl_files, retmsg = {}, "", [], ""
+        _xpath, _hash, site_info, dl_files_folder, dl_files, retmsg =None, False, {}, "", [], ""
 
         if torrent_file:
             # 有种子文件时解析种子信息
@@ -314,16 +314,41 @@ class Downloader:
             if url.startswith("magnet:"):
                 content = url
             else:
-                # 获取Cookie和ua等
-                site_info = self.sites.get_sites(siteurl=url)
-                # 下载种子文件，并读取信息
-                _, content, dl_files_folder, dl_files, retmsg = Torrent().get_torrent_info(
-                    url=url,
-                    cookie=site_info.get("cookie"),
-                    ua=site_info.get("ua"),
-                    referer=page_url if site_info.get("referer") else None,
-                    proxy=site_info.get("proxy")
-                )
+                # [XPATH]为需从详情页面解析磁力链
+                if url.startswith("["):
+                    _xpath = url[1:-1]
+                    url = page_url
+                # #XPATH#为需从详情页面解析磁力Hash
+                elif url.startswith("#"):
+                    _xpath = url[1:-1]
+                    _hash = True
+                    url = page_url
+                # 从详情页面XPATH解析下载链接
+                if _xpath:
+                    content = self.sites.parse_site_download_url(page_url=url,
+                                                                 xpath=_xpath)
+                    if not content:
+                        return None, "无法从详情页面：%s 解析出下载链接" % url
+                    # 解析出磁力链，补充Trackers
+                    if content.startswith("magnet:"):
+                        content = Torrent.add_trackers_to_magnet(url=content, title=title)
+                    # 解析出来的是HASH值，转换为磁力链
+                    elif _hash:
+                        content = Torrent.convert_hash_to_magnet(hash_text=content, title=title)
+                        if not content:
+                            return None, "%s 转换磁力链失败" % content
+                # 从HTTP链接下载种子
+                else:
+                    # 获取Cookie和ua等
+                    site_info = self.sites.get_sites(siteurl=url)
+                    # 下载种子文件，并读取信息
+                    _, content, dl_files_folder, dl_files, retmsg = Torrent().get_torrent_info(
+                        url=url,
+                        cookie=site_info.get("cookie"),
+                        ua=site_info.get("ua"),
+                        referer=page_url if site_info.get("referer") else None,
+                        proxy=site_info.get("proxy")
+                    )
 
         # 解析完成
         if retmsg:
@@ -1190,6 +1215,8 @@ class Downloader:
         """
         site_info = self.sites.get_sites(siteurl=url)
         # 保存种子文件
+        if not site_info.get("cookie"):
+            return [], None
         file_path, _, _, files, retmsg = Torrent().get_torrent_info(
             url=url,
             cookie=site_info.get("cookie"),
