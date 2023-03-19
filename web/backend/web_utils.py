@@ -42,7 +42,7 @@ class WebUtils:
     @staticmethod
     def get_latest_version():
         """
-        获取最新版本号
+        获取最新版本号, 构成规则：version空格commitId
         """
         try:
             releases_update_only = Config().get_config("app").get("releases_update_only")
