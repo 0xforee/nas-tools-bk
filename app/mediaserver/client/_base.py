@@ -140,3 +140,10 @@ class _IMediaClient(metaclass=ABCMeta):
         解析Webhook报文，获取消息内容结构
         """
         pass
+
+    @abstractmethod
+    def get_host(self):
+        """
+        获取 host 地址，直接跳转
+        """
+        pass

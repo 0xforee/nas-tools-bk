@@ -222,7 +222,9 @@ def index():
     LibrarySpaces = WebAction().get_library_spacesize()
 
     # 媒体库
-    Librarys = MediaServer().get_libraries()
+    mediaserver = MediaServer()
+    Librarys = mediaserver.get_libraries()
+    Host = mediaserver.get_host()
     LibrarySyncConf = SystemConfig().get_system_config(SystemConfigKey.SyncLibrary) or []
 
     return render_template("index.html",
@@ -239,7 +241,8 @@ def index():
                            UsedPercent=LibrarySpaces.get("UsedPercent"),
                            MediaServerType=MSType,
                            Librarys=Librarys,
-                           LibrarySyncConf=LibrarySyncConf
+                           LibrarySyncConf=LibrarySyncConf,
+                           Host = Host
                            )
 
 

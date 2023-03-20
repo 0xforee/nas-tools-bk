@@ -389,3 +389,6 @@ class Plex(_IMediaClient):
             eventItem['user_name'] = message.get("Account").get('title')
 
         return eventItem
+
+    def get_host(self):
+        return self._host

@@ -444,3 +444,6 @@ class Jellyfin(_IMediaClient):
                      'user_name': message.get('NotificationUsername')
                      }
         return eventItem
+
+    def get_host(self):
+        return self._host

@@ -347,3 +347,6 @@ class MediaServer:
             self.message.send_mediaserver_message(event_info=event_info,
                                                   channel=channel.value,
                                                   image_url=image_url)
+
+    def get_host(self):
+        return self.server.get_host()

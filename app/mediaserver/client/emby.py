@@ -558,3 +558,6 @@ class Emby(_IMediaClient):
             eventItem['user_name'] = message.get("User").get('Name')
 
         return eventItem
+
+    def get_host(self):
+        return self._host
