@@ -79,11 +79,11 @@
                   </td>
                   <td><span class="text-nowrap">{{ Attr.name }}</span></td>
                   <td>
-                    <div class="d-none d-md-inline-block">
+                    <a class="d-none d-md-inline-block" href="{% if Attr.config.get('host') %} {{ Attr.config.get('host') }}:{{Attr.config.get('port')}} {% endif %} " >
                     {% if Attr.config.get("host")  %}
                       {{ Attr.config.get("host") }}:{{ Attr.config.get("port") }}
                     {% endif %}
-                    </div>
+                    </a>
                   </td>
                   <td>
                     {% if DownloaderConf[Attr.type].monitor_enable %}

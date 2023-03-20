@@ -3623,9 +3623,11 @@ class WebAction:
         for torrent in torrents:
             # 识别
             name = torrent.get("name")
+            site_url = torrent.get("site_url")
             media_info = MediaHander.get_media_info(title=name)
             if not media_info:
                 torrent.update({
+                    "site_url": site_url,
                     "title": name,
                     "image": ""
                 })
@@ -3643,6 +3645,7 @@ class WebAction:
                 ), media_info.get_season_episode_string())
             poster_path = media_info.get_poster_image()
             torrent.update({
+                "site_url": site_url,
                 "title": title,
                 "image": poster_path or ""
             })
