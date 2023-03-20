@@ -35,7 +35,7 @@ NAS媒体库管理工具。
 ## 安装
 ### 1、Docker
 ```
-docker pull 0xforee/nas-tools:v3.0.0-alpha.0
+docker pull 0xforee/nas-tools:latest
 ```
 教程见 [这里](docker/readme.md) 。
 
