@@ -30,6 +30,7 @@ ENV LANG="C.UTF-8" \
     PGID=0 \
     UMASK=000 \
     WORKDIR="/nas-tools"
+ADD "https://api.github.com/repos/0xforee/nas-tools/commits?per_page=1" latest_commit
 WORKDIR ${WORKDIR}
 RUN python_ver=$(python3 -V | awk '{print $2}') \
     && echo "${WORKDIR}/" > /usr/lib/python${python_ver%.*}/site-packages/nas-tools.pth \
