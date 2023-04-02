@@ -6,6 +6,7 @@ import pytz
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.util import undefined
 
 import log
 from app.doubansync import DoubanSync

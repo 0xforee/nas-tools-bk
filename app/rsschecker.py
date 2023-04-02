@@ -88,10 +88,12 @@ class RssChecker(object):
                     note = {}
             save_path = note.get("save_path") or ""
             recognization = note.get("recognization") or "Y"
+            proxy = note.get("proxy") or "N"
             self._rss_tasks.append({
                 "id": task.ID,
                 "name": task.NAME,
                 "address": task.ADDRESS,
+                "proxy": proxy,
                 "parser": task.PARSER,
                 "parser_name": parser.get("name") if parser else "",
                 "interval": task.INTERVAL,
@@ -134,6 +136,7 @@ class RssChecker(object):
                     # cron表达式
                     try:
                         self._scheduler.add_job(func=self.check_task_rss,
+                                                args=[task.get("id")],
                                                 trigger=CronTrigger.from_crontab(cron))
                         rss_flag = True
                     except Exception as e:
@@ -332,7 +335,7 @@ class RssChecker(object):
         # 添加下载
         if rss_download_torrents:
             for media in rss_download_torrents:
-                dl_type, ret, ret_msg = self.downloader.download(
+                downloader_id, ret, ret_msg = self.downloader.download(
                     media_info=media,
                     download_dir=taskinfo.get("save_path"),
                     download_setting=taskinfo.get("download_setting"),
@@ -341,7 +344,8 @@ class RssChecker(object):
                     # 下载类型的 这里下载成功了 插入数据库
                     self.dbhelper.insert_rss_torrents(media)
                     # 登记自定义RSS任务下载记录
-                    self.dbhelper.insert_userrss_task_history(taskid, media.org_string, dl_type.value)
+                    downloader_name = self.downloader.get_downloader_conf(downloader_id).get("name")
+                    self.dbhelper.insert_userrss_task_history(taskid, media.org_string, downloader_name)
                 else:
                     log.error("【RssChecker】添加下载任务 %s 失败：%s" % (
                         media.get_title_string(), ret_msg or "请检查下载任务是否已存在"))
@@ -407,7 +411,8 @@ class RssChecker(object):
             rss_url = "%s?%s" % (rss_url, param_url) if rss_url.find("?") == -1 else "%s&%s" % (rss_url, param_url)
         # 请求数据
         try:
-            ret = RequestUtils().get_res(rss_url)
+            ret = RequestUtils(proxies=Config().get_proxies() if taskinfo.get("proxy") == "Y" else None
+                               ).get_res(rss_url)
             if not ret:
                 return []
             ret.encoding = ret.apparent_encoding
