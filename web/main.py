@@ -14,12 +14,14 @@ from math import floor
 from pathlib import Path
 from threading import Lock
 from urllib import parse
+from urllib.parse import unquote
 
 from flask import Flask, request, json, render_template, make_response, session, send_from_directory, send_file, \
     redirect, Response
 from flask_compress import Compress
 from flask_login import LoginManager, login_user, login_required, current_user
 from ics import Calendar, Event
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import log
 from app.brushtask import BrushTask
@@ -53,6 +55,7 @@ ConfigLock = Lock()
 
 # Flask App
 App = Flask(__name__)
+App.wsgi_app = ProxyFix(App.wsgi_app)
 App.config['JSON_AS_ASCII'] = False
 App.secret_key = os.urandom(24)
 App.permanent_session_lifetime = datetime.timedelta(days=30)
@@ -137,9 +140,12 @@ def login():
         """
         跳转到登录页面
         """
+        image_code, img_title, img_link = get_login_wallpaper()
         return render_template('login.html',
                                GoPage=GoPage,
-                               LoginWallpaper=get_login_wallpaper(),
+                               image_code=image_code,
+                               img_title=img_title,
+                               img_link=img_link,
                                err_msg=errmsg)
 
     # 登录认证
@@ -1051,7 +1057,7 @@ def dirlist():
     r = ['<ul class="jqueryFileTree" style="display: none;">']
     try:
         r = ['<ul class="jqueryFileTree" style="display: none;">']
-        in_dir = request.form.get('dir')
+        in_dir = unquote(request.form.get('dir'))
         ft = request.form.get("filter")
         if not in_dir or in_dir == "/":
             if SystemUtils.get_system() == OsType.WINDOWS:
@@ -1197,6 +1203,7 @@ def wechat():
 
 # Plex Webhook
 @App.route('/plex', methods=['POST'])
+@require_auth(force=False)
 def plex_webhook():
     if not SecurityHelper().check_mediaserver_ip(request.remote_addr):
         log.warn(f"非法IP地址的媒体服务器消息通知：{request.remote_addr}")
@@ -1213,6 +1220,7 @@ def plex_webhook():
 
 # Jellyfin Webhook
 @App.route('/jellyfin', methods=['POST'])
+@require_auth(force=False)
 def jellyfin_webhook():
     if not SecurityHelper().check_mediaserver_ip(request.remote_addr):
         log.warn(f"非法IP地址的媒体服务器消息通知：{request.remote_addr}")
@@ -1227,8 +1235,9 @@ def jellyfin_webhook():
     return 'Ok'
 
 
-@App.route('/emby', methods=['POST'])
 # Emby Webhook
+@App.route('/emby', methods=['POST'])
+@require_auth(force=False)
 def emby_webhook():
     if not SecurityHelper().check_mediaserver_ip(request.remote_addr):
         log.warn(f"非法IP地址的媒体服务器消息通知：{request.remote_addr}")
@@ -1244,7 +1253,8 @@ def emby_webhook():
 
 
 # Telegram消息响应
-@App.route('/telegram', methods=['POST', 'GET'])
+@App.route('/telegram', methods=['POST'])
+@require_auth(force=False)
 def telegram():
     """
     {
@@ -1307,7 +1317,8 @@ def telegram():
 
 
 # Synology Chat消息响应
-@App.route('/synology', methods=['POST', 'GET'])
+@App.route('/synology', methods=['POST'])
+@require_auth(force=False)
 def synology():
     """
     token: bot token
@@ -1345,6 +1356,7 @@ def synology():
 
 # Slack消息响应
 @App.route('/slack', methods=['POST'])
+@require_auth(force=False)
 def slack():
     """
     # 消息
@@ -1477,7 +1489,7 @@ def slack():
 
 
 # Jellyseerr Overseerr订阅接口
-@App.route('/subscribe', methods=['POST', 'GET'])
+@App.route('/subscribe', methods=['POST'])
 @require_auth
 def subscribe():
     """
@@ -1628,6 +1640,7 @@ def upload():
 
 
 @App.route('/ical')
+@require_auth(force=False)
 def ical():
     ICal = Calendar()
     RssItems = WebAction().get_ical_events().get("result")
