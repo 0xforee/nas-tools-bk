@@ -155,7 +155,7 @@ class Scheduler:
 
         self.SCHEDULER.start()
 
-    def start_job(self, func, func_desc, cron, next_run_time=None):
+    def start_job(self, func, func_desc, cron, next_run_time=undefined):
         """
         解析任务的定时规则,启动定时服务
         :param func: 可调用的一个函数,在指定时间运行
