@@ -309,7 +309,7 @@ function compareVersion(version1, version2) {
     }
 
     return 0;
-    
+    }
 //    if (c1 && c2) {
 //        if (c1 === c2) {
 //            return 0;
