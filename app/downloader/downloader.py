@@ -433,8 +433,10 @@ class Downloader:
             seeding_time_limit = download_attr.get("seeding_time_limit")
             # 下载目录
             if not download_dir:
+                log.info(f"【Downloader】下载器 before, down_dir: {download_dir}, media: {media_info}, down_conf: {downloader_conf}")
                 download_info = self.__get_download_dir_info(media_info, downloader_conf.get("download_dir"))
                 download_dir = download_info.get('path')
+                log.info(f"【Downloader】下载器 after, down_dir: {download_dir}")
                 download_label = download_info.get('label')
                 if not category:
                     category = download_label
@@ -1204,8 +1206,10 @@ class Downloader:
         """
         根据媒体信息读取一个下载目录的信息
         """
+        log.info(f'media: {media} downloaddir: {downloaddir}')
         if media:
             for attr in downloaddir or []:
+                log.info(f'attr: {attr}')
                 if not attr:
                     continue
                 if attr.get("type") and attr.get("type") != media.type.value:
@@ -1224,6 +1228,7 @@ class Downloader:
                 ):
                     continue
                 return {"path": attr.get("save_path"), "label": attr.get("label")}
+        log.info(f'media is null')
         return {"path": None, "label": None}
 
     @staticmethod
