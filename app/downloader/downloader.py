@@ -1356,7 +1356,7 @@ class Downloader:
             log.error(f"【Downloader】下载器连接测试失败")
         return state
 
-    def fraction_download(self, size, saved_path, downloader_id, download_id):
+    def fraction_download(self, size, container_path, downloader_id, download_id):
         """
         做种使用文件部分下载，开启最小化文件做种模式后使用
         size: rss 中种子总大小，后续会给出真实使用的大小
@@ -1384,9 +1384,10 @@ class Downloader:
         else:
             limit_size = min(100 * 1024 * 1024 * 1024, size / 15)
 
-        # 不要超过磁盘剩余空间
-        free_space = SystemUtils.get_free_space(saved_path)
-        limit_size = min(limit_size, free_space * 1024 * 1024 * 1024)
+        # 不要超过磁盘剩余空间，如果目录没找到，跳过
+        free_space = SystemUtils.get_free_space(container_path)
+        if free_space != 0.0:
+            limit_size = min(limit_size, free_space * 1024 * 1024 * 1024)
 
         # for qb
         priority_info = {
