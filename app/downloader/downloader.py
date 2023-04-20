@@ -328,7 +328,7 @@ class Downloader:
                     content = self.sites.parse_site_download_url(page_url=url,
                                                                  xpath=_xpath)
                     if not content:
-                        return None, "无法从详情页面：%s 解析出下载链接" % url
+                        return None, None, "无法从详情页面：%s 解析出下载链接" % url
                     # 解析出磁力链，补充Trackers
                     if content.startswith("magnet:"):
                         content = Torrent.add_trackers_to_magnet(url=content, title=title)
@@ -336,7 +336,7 @@ class Downloader:
                     elif _hash:
                         content = Torrent.convert_hash_to_magnet(hash_text=content, title=title)
                         if not content:
-                            return None, "%s 转换磁力链失败" % content
+                            return None,None,  "%s 转换磁力链失败" % content
                 # 从HTTP链接下载种子
                 else:
                     # 获取Cookie和ua等
@@ -1356,7 +1356,7 @@ class Downloader:
             log.error(f"【Downloader】下载器连接测试失败")
         return state
 
-    def fraction_download(self, size, downloader_id, download_id):
+    def fraction_download(self, size, saved_path, downloader_id, download_id):
         """
         做种使用文件部分下载，开启最小化文件做种模式后使用
         size: rss 中种子总大小，后续会给出真实使用的大小
@@ -1383,6 +1383,10 @@ class Downloader:
             limit_size = size / 5
         else:
             limit_size = min(100 * 1024 * 1024 * 1024, size / 15)
+
+        # 不要超过磁盘剩余空间
+        free_space = SystemUtils.get_free_space(saved_path)
+        limit_size = min(limit_size, free_space * 1024 * 1024 * 1024)
 
         # for qb
         priority_info = {
