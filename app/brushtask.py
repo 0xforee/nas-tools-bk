@@ -272,6 +272,7 @@ class BrushTask(object):
             _msg_text = "删除原因：{}\n种子名称：{}".format(_delete_type.value, _torrent_name)
             self.message.send_brushtask_remove_message(title=_msg_title, text=_msg_text)
 
+        log.debug("【Brush】删种任务检查开始运行")
         # 遍历所有任务
         for taskinfo in self._brush_tasks:
             if not taskinfo.get("state"):
@@ -392,13 +393,7 @@ class BrushTask(object):
                                                     torrent_id))
                     # 不删种的情况下处理限速
                     else:
-                        # 限免限速的处理只一次
-                        if torrent_id not in self._torrents_free_limit_cache:
-                            self._torrents_free_limit_cache.append(torrent_id)
-                        else:
-                            log.debug("【Brush】%s 限速已处理过" % torrent_info.get("name"))
-                            continue
-
+                        log.debug("【Brush】%s 检查限免限速" % torrent_info.get("name"))
                         # 判断是否超过免费截止
                         tags = torrent_info.get("tags").split(",")
                         ddl = ""
@@ -413,6 +408,13 @@ class BrushTask(object):
                             ddl_time = datetime.strptime(ddl, pattern)
                             # 删种检查间隔为5分钟，如果5分钟内限免结束了，提早结束下载，防止流量偷跑
                             if (datetime.now() + timedelta(minutes=BRUSH_REMOVE_TORRENTS_INTERVAL/60)) >= ddl_time:
+                                # 限免限速的处理只一次
+                                if torrent_id not in self._torrents_free_limit_cache:
+                                    self._torrents_free_limit_cache.append(torrent_id)
+                                else:
+                                    log.debug("【Brush】%s 限速已处理过" % torrent_info.get("name"))
+                                    continue
+
                                 # reach ddl
                                 log.info(
                                     "【Brush】%s 已达到限免时间：开启下载限速 1kb/s ..." % (torrent.get('name')))
