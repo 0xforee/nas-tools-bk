@@ -1,5 +1,4 @@
 FROM alpine
-RUN set -eux && sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
 RUN apk update  \
     && apk add --no-cache libffi-dev \
     && apk add --no-cache $(echo $(wget --no-check-certificate -qO- https://raw.githubusercontent.com/0xforee/nas-tools/master/package_list.txt)) \
@@ -30,7 +29,6 @@ ENV LANG="C.UTF-8" \
     UMASK=000 \
     WORKDIR="/nas-tools" \
     NT_HOME="/nt"
-ADD "https://api.github.com/repos/0xforee/nas-tools/commits?per_page=1&sha=master" latest_commit
 WORKDIR ${WORKDIR}
 RUN mkdir ${NT_HOME} \
     && addgroup -S nt -g 911 \
