@@ -136,8 +136,9 @@ if __name__ == '__main__':
             p1 = threading.Thread(target=traystart, daemon=True)
             p1.start()
     else:
+        pass
         # 初始化浏览器驱动
-        init_chrome()
+        # init_chrome()
 
     # gunicorn 启动
     App.run(**get_run_config(is_windows_exe))

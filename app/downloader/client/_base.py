@@ -184,3 +184,11 @@ class _IDownloadClient(metaclass=ABCMeta):
         设置速度限制
         """
         pass
+
+    @abstractmethod
+    def set_downloadspeed_limit(self, ids, limit):
+        """
+        设置速度限制
+        """
+        pass
+

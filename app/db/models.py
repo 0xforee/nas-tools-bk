@@ -386,11 +386,13 @@ class SITEBRUSHTASK(Base):
     FREELEECH = Column(Text)
     RSS_RULE = Column(Text)
     REMOVE_RULE = Column(Text)
+    FRACTION_RULE = Column(Text)
     SEED_SIZE = Column(Text)
     INTEVAL = Column(Text)
     LABEL = Column(Text)
     DOWNLOADER = Column(Text)
     TRANSFER = Column(Text)
+    BRUSHTASK_FREE_LIMIT_SPEED = Column(Text)
     DOWNLOAD_COUNT = Column(Integer)
     REMOVE_COUNT = Column(Integer)
     DOWNLOAD_SIZE = Column(Integer)
@@ -410,6 +412,7 @@ class SITEBRUSHTORRENTS(Base):
     ENCLOSURE = Column(Text)
     DOWNLOADER = Column(Text)
     DOWNLOAD_ID = Column(Text)
+    FREE_DEADLINE = Column(Text)
     LST_MOD_DATE = Column(Text)
 
     def as_dict(self):

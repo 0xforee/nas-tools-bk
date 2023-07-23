@@ -185,6 +185,10 @@
                   </div>
                 </div>
                 <div class="datagrid-item">
+                  <div class="datagrid-title">已保种体积</div>
+                  <div class="datagrid-content">{{ Task.total_size }} GB</div>
+                </div>
+                <div class="datagrid-item">
                   <div class="datagrid-title">已下载种子数</div>
                   <div class="datagrid-content">{{ Task.download_count }}</div>
                 </div>
@@ -335,6 +339,16 @@
                 <input class="form-check-input" type="checkbox" id="brushtask_transfer">
                 <span class="form-check-label">转移到媒体库 <span class="form-help"
                                                                   title="开启后刷流的下载也会进行转移并识别重命名到媒体库"
+                                                                  data-bs-toggle="tooltip">?</span></span>
+              </label>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="mb-3">
+              <label class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="brushtask_free_limit_speed">
+                <span class="form-check-label">限免到期下载限速 <span class="form-help"
+                                                                  title="开启后，限免到期后下载速度降为1B/s，防止流量偷跑。测试站点有限，请观察后开启。"
                                                                   data-bs-toggle="tooltip">?</span></span>
               </label>
             </div>
@@ -642,6 +656,30 @@
             </div>
           </div>
         </div>
+        <div class="hr-text hr-text-center hr-text-spaceless mt-1 mb-3">部分下载规则</div>
+        <div class="row">
+          <div class="col-lg-4">
+            <div class="mb-3">
+              <label class="form-label">计算前范围(GB) <span class="form-help" title="和比例成对出现，例如范围为0,10,100时，将种子大小范围分为三个区间，0-10,10-100,100-无穷大"
+                                                             data-bs-toggle="tooltip">?</span></label>
+              <input type="text" id="frac_before_range" class="form-control" placeholder="">
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="mb-3">
+              <label class="form-label">计算前比例 <span class="form-help" title="为小于等于1的数，和范围成对出现，例如比例为1,0.5,0.25时，0-10GB下载比例为1，10-100GB下载比例0.5，100GB-无穷大下载比例0.25"
+                                                             data-bs-toggle="tooltip">?</span></label>
+                <input type="text" id="frac_before_percent" class="form-control" placeholder="">
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="mb-3">
+              <label class="form-label">计算后范围(GB) <span class="form-help" title="计算后的种子大小，受此约束。例如计算后范围设置10-100GB，说明至少下载10GB，至多下载100GB"
+                                                             data-bs-toggle="tooltip">?</span></label>
+              <input type="text" id="frac_after_range" class="form-control" placeholder="">
+            </div>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-link me-auto" data-bs-dismiss="modal">取消</button>
@@ -654,7 +692,7 @@
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">刷流种子明细</h5>
+        <h5 class="modal-title">刷流种子明细(仅展示最近 300 个）</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="table-responsive table-modal-body">
@@ -707,6 +745,12 @@
           $("#brushtask_transfer").prop("checked", true);
         } else {
           $("#brushtask_transfer").prop("checked", false);
+        }
+        // 限免到期限速
+        if (ret.task.brushtask_free_limit_speed) {
+          $("#brushtask_free_limit_speed").prop("checked", true);
+        } else {
+          $("#brushtask_free_limit_speed").prop("checked", false);
         }
         if (ret.task.sendmessage) {
           $("#brushtask_sendmessage").prop("checked", true);
@@ -773,6 +817,12 @@
         $("#brushtask_upspeed").val(ret.task.rss_rule.upspeed);
         //下载限速
         $("#brushtask_downspeed").val(ret.task.rss_rule.downspeed);
+        //计算前范围
+        $("#frac_before_range").val(ret.task.fraction_rule.frac_before_range);
+        //计算前比例
+        $("#frac_before_percent").val(ret.task.fraction_rule.frac_before_percent);
+        //计算后范围
+        $("#frac_after_range").val(ret.task.fraction_rule.frac_after_range);
         //弹窗
         $("#modal-brushtask").modal('show');
       }
@@ -883,6 +933,7 @@
     let brushtask_label = $("#brushtask_label").val();
     let brushtask_state = $("#brushtask_state").val();
     let brushtask_transfer = $("#brushtask_transfer").prop('checked');
+    let brushtask_free_limit_speed = $("#brushtask_free_limit_speed").prop('checked');
     let brushtask_sendmessage = $("#brushtask_sendmessage").prop('checked');
     let brushtask_free = $("#brushtask_free").val();
     let brushtask_hr = $("#brushtask_hr").val();
@@ -1041,6 +1092,73 @@
       $("#brushtask_iatime").removeClass("is-invalid");
     }
 
+    //部分下载前范围
+    let frac_before_range = $("#frac_before_range").val();
+    let range_split_num = 0
+    if (frac_before_range) {
+      range_split_num = frac_before_range.split(',').length;
+    }
+    // 范围要从小到大
+    let before_range_array = frac_before_range.split(',');
+    for(let i=0;i<before_range_array.length -1;i++){
+      if(parseFloat(before_range_array[i])>=parseFloat(before_range_array[i+1])){
+        $("#frac_before_range").addClass("is-invalid");
+        return;
+      }else{
+        $("#frac_before_range").removeClass("is-invalid");
+      }
+    }
+
+
+    //部分下载前比例
+    let frac_before_percent = $("#frac_before_percent").val();
+    let percent_split_num = 0
+    if (frac_before_percent) {
+      percent_split_num = frac_before_percent.split(',').length;
+    }
+
+    // 成对出现
+    if(range_split_num != percent_split_num){
+      $("#frac_before_range").addClass("is-invalid");
+      $("#frac_before_percent").addClass("is-invalid");
+      return;
+    }else{
+      $("#frac_before_range").removeClass("is-invalid");
+      $("#frac_before_percent").removeClass("is-invalid");
+    }
+
+
+    // 比例每个数字不超过1
+    let percent_array = frac_before_percent.split(',');
+    for(let i=0;i<percent_array.length;i++){
+      if(parseFloat(percent_array[i])>1){
+        $("#frac_before_percent").addClass("is-invalid");
+        return;
+      }else{
+        $("#frac_before_percent").removeClass("is-invalid");
+      }
+    }
+
+    //部分下载后范围
+    let frac_after_range = $("#frac_after_range").val();
+    if (frac_after_range && !/\d+,\d+/.test(frac_after_range)) {
+      $("#frac_after_range").addClass("is-invalid");
+      return;
+    } else {
+      $("#frac_after_range").removeClass("is-invalid");
+    }
+
+    // 范围要从小到大
+    let after_range_array = frac_after_range.split(',');
+    for(let i=0;i<after_range_array.length -1;i++){
+      if(parseFloat(after_range_array[i])>=parseFloat(after_range_array[i+1])){
+        $("#frac_after_range").addClass("is-invalid");
+        return;
+      }else{
+        $("#frac_after_range").removeClass("is-invalid");
+      }
+    }
+
     // 参数
     const params = {
       brushtask_id: brushtask_id,
@@ -1053,6 +1171,7 @@
       brushtask_label: brushtask_label,
       brushtask_state: brushtask_state,
       brushtask_transfer: brushtask_transfer,
+      brushtask_free_limit_speed: brushtask_free_limit_speed,
       brushtask_sendmessage: brushtask_sendmessage,
       brushtask_free: brushtask_free,
       brushtask_hr: brushtask_hr,
@@ -1069,6 +1188,9 @@
       brushtask_iatime: brushtask_iatime_do + "#" + brushtask_iatime,
       brushtask_upspeed: brushtask_upspeed,
       brushtask_downspeed: brushtask_downspeed,
+      frac_before_range: frac_before_range,
+      frac_before_percent: frac_before_percent,
+      frac_after_range: frac_after_range,
       brushtask_pubdate: brushtask_pubdate_do + "#" + brushtask_pubdate
     };
 
@@ -1103,6 +1225,8 @@
         let content_th = `<thead><tr>
                           <th>标题</th>
                           <th>状态</th>
+                          <th>大小</th>
+                          <th>限免过期时间</th>
                           <th>添加时间</th>
                           </tr></thead>`;
         let content_td = '';
@@ -1110,6 +1234,8 @@
           const download = downloads[i];
           let title = '';
           let state = '';
+          let size = '';
+          let free_ddl = '';
           let date = '';
           if (download.TORRENT_NAME) {
             title = `<span class="text-muted">${download.TORRENT_NAME}</span>`
@@ -1123,7 +1249,18 @@
           } else {
             state = `<span class="badge bg-green me-1 mb-1">正常</span>`;
           }
-          content_td = `${content_td}<tr><td>${title}</td>><td>${state}</td><td class="text-nowrap">${date}</td></tr>`;
+          let gbsize = (parseInt(download.TORRENT_SIZE)/1024/1024/1024).toFixed(2);
+          if(gbsize > 0){
+            size = `<span class="text-muted">${gbsize}GB</span>`
+          } else {
+            size = `<span class="text-muted"> </span>`
+          }
+          if(download.FREE_DEADLINE){
+            free_ddl = `<span class="text-muted">${download.FREE_DEADLINE}</span>`
+          } else {
+            free_ddl = `<span class="text-muted"> </span>`
+          }
+          content_td = `${content_td}<tr><td>${title}</td>><td>${state}</td><td>${size}</td><td>${free_ddl}</td><td class="text-nowrap">${date}</td></tr>`;
           let content_tb = `<tbody>${content_td}</tbody>`;
           content = `${content_th}${content_tb}`;
         };

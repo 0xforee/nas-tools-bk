@@ -20,7 +20,7 @@ if [ "${NASTOOL_AUTO_UPDATE}" = "true" ]; then
     if [ "${NASTOOL_VERSION}" == "dev" ]; then
       branch="dev"
     else
-      branch="master"
+      branch="develop"
     fi
 
     git clean -dffx

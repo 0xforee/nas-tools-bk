@@ -1229,7 +1229,7 @@ class WebAction:
             os.system("sudo git clean -dffx")
             # 升级
             branch = "dev" if os.environ.get(
-                "NASTOOL_VERSION") == "dev" else "master"
+                "NASTOOL_VERSION") == "dev" else "develop"
             os.system(f"sudo git fetch --depth 1 origin {branch}")
             os.system(f"sudo git reset --hard origin/{branch}")
             os.system("sudo git submodule update --init --recursive")
@@ -1965,6 +1965,7 @@ class WebAction:
         brushtask_rssurl = data.get("brushtask_rssurl")
         brushtask_label = data.get("brushtask_label")
         brushtask_transfer = 'Y' if data.get("brushtask_transfer") else 'N'
+        brushtask_free_limit_speed = 'Y' if data.get("brushtask_free_limit_speed") else 'N'
         brushtask_sendmessage = 'Y' if data.get(
             "brushtask_sendmessage") else 'N'
         brushtask_free = data.get("brushtask_free")
@@ -1983,6 +1984,9 @@ class WebAction:
         brushtask_pubdate = data.get("brushtask_pubdate")
         brushtask_upspeed = data.get("brushtask_upspeed")
         brushtask_downspeed = data.get("brushtask_downspeed")
+        frac_before_range = data.get("frac_before_range")
+        frac_before_percent = data.get("frac_before_percent")
+        frac_after_range = data.get("frac_after_range")
         # 选种规则
         rss_rule = {
             "free": brushtask_free,
@@ -2005,6 +2009,12 @@ class WebAction:
             "avg_upspeed": brushtask_avg_upspeed,
             "iatime": brushtask_iatime
         }
+        # 部分下载规则
+        fraction_rule = {
+            "frac_before_range": frac_before_range,
+            "frac_before_percent": frac_before_percent,
+            "frac_after_range": frac_after_range
+        }
         # 添加记录
         item = {
             "name": brushtask_name,
@@ -2016,9 +2026,11 @@ class WebAction:
             "seed_size": brushtask_totalsize,
             "label": brushtask_label,
             "transfer": brushtask_transfer,
+            "brushtask_free_limit_speed": brushtask_free_limit_speed,
             "state": brushtask_state,
             "rss_rule": rss_rule,
             "remove_rule": remove_rule,
+            "fraction_rule": fraction_rule,
             "sendmessage": brushtask_sendmessage
         }
         self.dbhelper.insert_brushtask(brushtask_id, item)
@@ -4396,6 +4408,9 @@ class WebAction:
                                                        active=False)
         if not results:
             return {"code": 1, "msg": "未下载种子或未获取到种子明细"}
+        # 返回最多300个，优化页面性能
+        if len(results) > 0:
+            results = results[0: min(300, len(results))]
         return {"code": 0, "data": [item.as_dict() for item in results]}
 
     @staticmethod

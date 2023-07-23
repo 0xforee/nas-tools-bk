@@ -5,7 +5,7 @@ import time
 from functools import lru_cache
 
 from lxml import etree
-
+import log
 from app.helper import ChromeHelper
 from app.utils import ExceptionUtils, StringUtils, RequestUtils
 from app.utils.commons import singleton
@@ -115,7 +115,8 @@ class SiteConf:
             "free": False,
             "2xfree": False,
             "hr": False,
-            "peer_count": 0
+            "peer_count": 0,
+            "free_deadline": ""
         }
         if not torrent_url:
             return ret_attr
@@ -140,6 +141,17 @@ class SiteConf:
             for xpath_str in xpath_strs.get("FREE"):
                 if html.xpath(xpath_str):
                     ret_attr["free"] = True
+            # 检测限时信息，result为空表示未找到 限时信息
+            try:
+                title_xpath_str = "//h1[@id='top']//span"
+                result = html.xpath(title_xpath_str)
+                if len(result) > 0:
+                    free_ddl = self.__parse_free_deadline(result[0].text)
+                else:
+                    free_ddl = ""
+                ret_attr["free_deadline"] = free_ddl
+            except Exception as err:
+                ExceptionUtils.exception_traceback(err)
             # 检测HR
             for xpath_str in xpath_strs.get("HR"):
                 if html.xpath(xpath_str):
@@ -161,6 +173,41 @@ class SiteConf:
         # 随机休眼后再返回
         time.sleep(round(random.uniform(1, 5), 1))
         return ret_attr
+
+    def __parse_free_deadline(self, deadline_str: str):
+        """
+        解析限免时间：
+        MTEAM: 2日23時11分
+        hdmayi:1天23时48分钟
+        转换时间格式：%Y%m%d_%H%M
+        返回：转换后时间 20230715_2310
+        """
+        free_deadline_str = ""
+        try:
+            import re
+            free_deadline_re_day_pattern = r'(\d+)[天|日]'
+            free_deadline_re_hour_pattern = r'(\d+)[時|时]'
+            free_deadline_re_minutes_pattern = r'(\d+)[分]'
+            day_result = re.search(free_deadline_re_day_pattern, deadline_str)
+            hour_result = re.search(free_deadline_re_hour_pattern, deadline_str)
+            minutes_result = re.search(free_deadline_re_minutes_pattern, deadline_str)
+            day_str = (day_result.group(1) if day_result and len(day_result.groups()) > 0 else "")
+            hour_str = (hour_result.group(1) if hour_result and len(hour_result.groups()) > 0 else "")
+            min_str = (minutes_result.group(1) if minutes_result and len(minutes_result.groups()) > 0 else "")
+
+            day = int(day_str if day_str else 0)
+            hour = int(hour_str if hour_str else 0)
+            min = int(min_str if min_str else 0)
+            if day > 0 or hour > 0 or min > 0:
+                import datetime
+                res = datetime.datetime.now() + datetime.timedelta(days=day, hours=hour, minutes=min)
+                free_deadline_str = res.strftime("%Y%m%d_%H%M")
+        except Exception as err:
+            ExceptionUtils.exception_traceback(err)
+            # 如果没有限时信息，就直接crash掉了，返回空
+            log.debug("Parse Deadline Error, origin: %s " % deadline_str)
+
+        return free_deadline_str
 
     @staticmethod
     @lru_cache(maxsize=128)
