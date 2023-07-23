@@ -1965,6 +1965,7 @@ class WebAction:
         brushtask_rssurl = data.get("brushtask_rssurl")
         brushtask_label = data.get("brushtask_label")
         brushtask_transfer = 'Y' if data.get("brushtask_transfer") else 'N'
+        brushtask_free_limit_speed = 'Y' if data.get("brushtask_free_limit_speed") else 'N'
         brushtask_sendmessage = 'Y' if data.get(
             "brushtask_sendmessage") else 'N'
         brushtask_free = data.get("brushtask_free")
@@ -2025,6 +2026,7 @@ class WebAction:
             "seed_size": brushtask_totalsize,
             "label": brushtask_label,
             "transfer": brushtask_transfer,
+            "brushtask_free_limit_speed": brushtask_free_limit_speed,
             "state": brushtask_state,
             "rss_rule": rss_rule,
             "remove_rule": remove_rule,
