@@ -17,10 +17,10 @@ if [ "${NASTOOL_AUTO_UPDATE}" = "true" ]; then
     git remote set-url origin "${REPO_URL}" &> /dev/null
     echo "windows/" > .gitignore
     # 更新分支
-    if [ "${NASTOOL_VERSION}" == "dev" ]; then
-      branch="dev"
-    else
+    if [ "${NASTOOL_VERSION}" == "develop" ]; then
       branch="develop"
+    else
+      branch="master"
     fi
 
     git clean -dffx

@@ -2,7 +2,7 @@ FROM alpine
 RUN set -eux && sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
 RUN apk update  \
     && apk add --no-cache libffi-dev \
-    && apk add --no-cache $(echo $(wget --no-check-certificate -qO- https://raw.githubusercontent.com/0xforee/nas-tools/develop/package_list.txt)) \
+    && apk add --no-cache $(echo $(wget --no-check-certificate -qO- https://raw.githubusercontent.com/0xforee/nas-tools/master/package_list.txt)) \
     && ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \
     && echo "${TZ}" > /etc/timezone \
     && ln -sf /usr/bin/python3 /usr/bin/python \
@@ -12,7 +12,7 @@ RUN apk update  \
     && chmod +x /usr/bin/mc \
     && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade pip setuptools wheel \
     && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple cython \
-    && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r https://raw.githubusercontent.com/0xforee/nas-tools/develop/requirements.txt \
+    && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r https://raw.githubusercontent.com/0xforee/nas-tools/master/requirements.txt \
     && npm install pm2 -g \
     && rm -rf /tmp/* /root/.cache /var/cache/apk/*
 ENV LANG="C.UTF-8" \
@@ -20,7 +20,7 @@ ENV LANG="C.UTF-8" \
     NASTOOL_CONFIG="/config/config.yaml" \
     NASTOOL_AUTO_UPDATE=false \
     NASTOOL_CN_UPDATE=true \
-    NASTOOL_VERSION=develop \
+    NASTOOL_VERSION=master \
     PS1="\u@\h:\w \$ " \
     REPO_URL="https://github.com/0xforee/nas-tools.git" \
     PYPI_MIRROR="https://pypi.tuna.tsinghua.edu.cn/simple" \
@@ -30,7 +30,7 @@ ENV LANG="C.UTF-8" \
     UMASK=000 \
     WORKDIR="/nas-tools" \
     NT_HOME="/nt"
-ADD "https://api.github.com/repos/0xforee/nas-tools/commits?per_page=1&sha=develop" latest_commit
+ADD "https://api.github.com/repos/0xforee/nas-tools/commits?per_page=1&sha=master" latest_commit
 WORKDIR ${WORKDIR}
 RUN mkdir ${NT_HOME} \
     && addgroup -S nt -g 911 \
@@ -41,7 +41,7 @@ RUN mkdir ${NT_HOME} \
     && echo 'fs.inotify.max_user_instances=5242880' >> /etc/sysctl.conf \
     && echo "nt ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
     && git config --global pull.ff only \
-    && git clone -b develop ${REPO_URL} ${WORKDIR} --depth=1 --recurse-submodule \
+    && git clone -b master ${REPO_URL} ${WORKDIR} --depth=1 --recurse-submodule \
     && git config --global --add safe.directory ${WORKDIR} \
     && chmod +x ${WORKDIR}/docker/entrypoint.sh
 EXPOSE 3000
