@@ -1228,8 +1228,8 @@ class WebAction:
             # 清理
             os.system("sudo git clean -dffx")
             # 升级
-            branch = "dev" if os.environ.get(
-                "NASTOOL_VERSION") == "dev" else "develop"
+            branch = "develop" if os.environ.get(
+                "NASTOOL_VERSION") == "develop" else "master"
             os.system(f"sudo git fetch --depth 1 origin {branch}")
             os.system(f"sudo git reset --hard origin/{branch}")
             os.system("sudo git submodule update --init --recursive")
