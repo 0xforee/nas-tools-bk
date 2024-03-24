@@ -9,6 +9,7 @@ from app.indexer.client._rarbg import Rarbg
 from app.indexer.client._render_spider import RenderSpider
 from app.indexer.client._spider import TorrentSpider
 from app.indexer.client._tnode import TNodeSpider
+from app.indexer.client._mteam import MTeamSpider
 from app.sites import Sites
 from app.utils import StringUtils
 from app.utils.types import SearchType, IndexerType, ProgressKey
@@ -168,6 +169,8 @@ class BuiltinIndexer(_IIndexClient):
                     keyword=search_word,
                     indexer=indexer,
                     mtype=match_media.type if match_media and match_media.tmdb_info else None)
+            elif indexer.parser == "MTeamSpider":
+                error_flag, result_array = MTeamSpider(indexer=indexer).search(keyword=search_word)
             else:
                 error_flag, result_array = self.__spider_search(
                     keyword=search_word,
@@ -247,6 +250,13 @@ class BuiltinIndexer(_IIndexClient):
         :param: timeout: 超时时间
         :return: 是否发生错误, 种子列表
         """
+        log.debug(f"spider search start {indexer.name}")
+        if indexer.name.find("MTeam") != -1:
+            spider = MTeamSpider(indexer)
+            flag, torrents = spider.inner_search(keyword)
+            log.debug(f"spider search end  {indexer.name}")
+            return flag, torrents
+
         spider = TorrentSpider()
         spider.setparam(indexer=indexer,
                         keyword=keyword,
@@ -267,4 +277,5 @@ class BuiltinIndexer(_IIndexClient):
         # 重置状态
         spider.torrents_info_array.clear()
 
+        log.debug(f"spider search end  {indexer.name}")
         return result_flag, result_array

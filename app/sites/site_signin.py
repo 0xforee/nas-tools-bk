@@ -67,10 +67,33 @@ class SiteSignin(object):
         签到一个站点
         """
         site_module = self.__build_class(site_info.get("signurl"))
+        site_url = site_info.get("signurl")
+
+        if site_url.find('m-team') != -1:
+            return self.mteam_sign(site_info)
+
         if site_module:
             return site_module.signin(site_info)
         else:
             return self.__signin_base(site_info)
+
+    def mteam_sign(self, site_info):
+        site_url = site_info.get("signurl")
+        site_cookie = site_info.get("cookie")
+        ua = site_info.get("ua")
+        url = f"{site_url}api/member/profile"
+        res = RequestUtils(
+            headers=ua,
+            cookies=site_cookie,
+            proxies=Config().get_proxies() if site_info.get("proxy") else None,
+            timeout=15
+        ).post_res(url=url)
+        if res and res.status_code == 200:
+            user_info = res.json()
+            if user_info and user_info.get("data"):
+                return True, "连接成功"
+        return False, "Cookie已失效"
+        pass
 
     def __signin_base(self, site_info):
         """

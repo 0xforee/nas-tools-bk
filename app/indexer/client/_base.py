@@ -222,6 +222,7 @@ class _IIndexClient(metaclass=ABCMeta):
             if not torrent_name:
                 index_error += 1
                 continue
+            # 种子链接
             enclosure = item.get('enclosure')
             size = item.get('size')
             seeders = item.get('seeders')
