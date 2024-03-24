@@ -84,6 +84,7 @@ class Torrent:
             proxies=Config().get_proxies() if proxy else None
         ).post_res(url=api, params={"id": torrent_id})
 
+
         if req and req.status_code == 200:
             return req.json().get("data")
 
@@ -94,7 +95,7 @@ class Torrent:
         把种子下载到本地
         :return: 种子保存路径，错误信息
         """
-        if url.find("m-team"):
+        if url.find("m-team") != -1:
             url = self.get_mteam_url(url, cookie, ua, referer, proxy)
             if not url:
                 return None, url, f"mteam 种子链接获取出错，详情地址为 {url}"
