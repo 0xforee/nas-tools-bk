@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 import log
 from app.conf import SystemConfig
-
+from app.message import Message
 
 class _IPluginModule(metaclass=ABCMeta):
     """
@@ -77,6 +77,15 @@ class _IPluginModule(metaclass=ABCMeta):
         if not plugin_id:
             plugin_id = self.__class__.__name__
         return SystemConfig().get_system_config("plugin.%s" % plugin_id)
+
+    @staticmethod
+    def send_message(title, text=None, image=None):
+        """
+        发送消息
+        """
+        return Message().send_plugin_message(title=title,
+                                             text=text,
+                                             image=image)
 
     def info(self, msg):
         """
