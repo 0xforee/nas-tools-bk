@@ -298,27 +298,26 @@ function compareVersion(version1, version2) {
         v2.push('99');
     }
 
-  for (let i = 0; i < len; i++) {
-    const num1 = parseInt(v1[i]);
-    const num2 = parseInt(v2[i]);
+      for (let i = 0; i < len; i++) {
+        const num1 = parseInt(v1[i]);
+        const num2 = parseInt(v2[i]);
 
-    if (num1 > num2) {
-      return 1;
-    } else if (num1 < num2) {
-      return -1;
-    }
+            if (num1 > num2) {
+              return 1;
+            } else if (num1 < num2) {
+              return -1;
+            }
+        }
 
-    return 0;
-    }
-//    if (c1 && c2) {
-//        if (c1 === c2) {
-//            return 0;
-//        } else {
-//            return 2;
-//        }
-//    } else {
-//        return 0;
-//    }
+        if (c1 && c2) {
+            if (c1 === c2) {
+                return 0;
+            } else {
+                return 2;
+            }
+        } else {
+            return 0;
+        }
 }
 
 
