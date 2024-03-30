@@ -1,4 +1,4 @@
-FROM alpine
+FROM python:3.11-alpine
 RUN apk update  \
     && apk add --no-cache libffi-dev \
     && apk add --no-cache $(echo $(wget --no-check-certificate -qO- https://raw.githubusercontent.com/0xforee/nas-tools/master/package_list.txt)) \
